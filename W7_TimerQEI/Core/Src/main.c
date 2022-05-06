@@ -55,7 +55,8 @@ float DegRel =0;
 float DegAbs =0;
 float RadRel =0;
 float RadAbs =0;
-uint16_t PWMOut = 0;
+uint16_t PWMROut = 0;
+uint16_t PWMLOut = 0;
 float AnsDegAbs = 0;
 
 /* USER CODE END PV */
@@ -114,6 +115,7 @@ int main(void)
 	HAL_TIM_Encoder_Start(&htim1, TIM_CHANNEL_ALL);
 	HAL_TIM_Base_Start(&htim3);
 	HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
+	HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_2);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -124,14 +126,23 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 		UpdatePosition();
-		__HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, PWMOut);
-		if(DegAbs >= AnsDegAbs-0.7){
-			PWMOut = 0;
+
+		if(AnsDegAbs >= DegAbs){
+			PWMROut = 2000;
+			PWMLOut = 0;
+
 		}
-		else
-		{
-			PWMOut = 1500;
+		else if(AnsDegAbs <= DegAbs){
+			PWMROut = 0;
+			PWMLOut = 2000;
+
 		}
+//		if(DegAbs >= AnsDegAbs){
+//			PWMROut = 0;
+//			PWMLOut = 0;
+//		}
+		__HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, PWMROut);
+		__HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, PWMLOut);
 
 	}
   /* USER CODE END 3 */
@@ -325,6 +336,10 @@ static void MX_TIM3_Init(void)
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
   if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
   {
     Error_Handler();
   }
